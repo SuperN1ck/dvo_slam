@@ -27,10 +27,15 @@ CameraBase::CameraBase(ros::NodeHandle& nh, ros::NodeHandle& nh_private) :
   nh_(nh),
   nh_private_(nh_private),
 
-  rgb_image_subscriber_(nh, "camera/rgb/image_rect", 1),
-  depth_image_subscriber_(nh, "camera/depth_registered/image_rect_raw", 1),
-  rgb_camera_info_subscriber_(nh, "camera/rgb/camera_info", 1),
-  depth_camera_info_subscriber_(nh, "camera/depth_registered/camera_info", 1),
+  rgb_image_subscriber_(nh, "/camera/color/image_raw", 1),
+  rgb_camera_info_subscriber_(nh, "/camera/color/camera_info", 1),
+
+  depth_image_subscriber_(nh, "/camera/aligned_depth_to_color/image_raw", 1),
+  depth_camera_info_subscriber_(nh, "/camera/aligned_depth_to_color/camera_info", 1),
+
+  // $ rosparam set /camera_tracker/run_dense_tracking true
+  // $ rosparam set /camera_tracker/use_initial_estimate false
+  // $ rosparam set /camera_tracker/use_weighting true
 
   synchronizer_(RGBDWithCameraInfoPolicy(5), rgb_image_subscriber_, depth_image_subscriber_, rgb_camera_info_subscriber_, depth_camera_info_subscriber_),
 
@@ -50,6 +55,7 @@ bool CameraBase::isSynchronizedImageStreamRunning()
 
 void CameraBase::startSynchronizedImageStream()
 {
+  ROS_INFO_STREAM("Connected: " << (connected? "True" : "False"));
   if(!connected)
   {
     connection = synchronizer_.registerCallback(boost::bind(&CameraBase::handleImages, this, _1, _2, _3, _4));

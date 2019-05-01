@@ -63,7 +63,7 @@ private:
   dvo::core::RgbdCameraPyramidPtr camera;
   dvo::core::RgbdImagePyramidPtr current, reference;
 
-  Eigen::Affine3d accumulated_transform, from_baselink_to_asus, latest_absolute_transform_;
+  Eigen::Affine3d accumulated_transform, from_baselink_to_camera, latest_absolute_transform_;
 
   size_t frames_since_last_success;
 

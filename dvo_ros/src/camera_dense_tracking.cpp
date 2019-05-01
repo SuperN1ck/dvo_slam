@@ -27,7 +27,7 @@
 #include <dvo/core/surface_pyramid.h>
 #include <dvo/util/stopwatch.h>
 //#include <dvo/visualization/visualizer.h>
-//#include <dvo/visualization/pcl_camera_trajectory_visualizer.h>
+#include <dvo/visualization/pcl_camera_trajectory_visualizer.h>
 
 #include <dvo_ros/camera_dense_tracking.h>
 #include <dvo_ros/util/util.h>
@@ -58,15 +58,17 @@ CameraDenseTracker::CameraDenseTracker(ros::NodeHandle& nh, ros::NodeHandle& nh_
   ReconfigureServer::CallbackType reconfigure_server_callback = boost::bind(&CameraDenseTracker::handleConfig, this, _1, _2);
   reconfigure_server_.setCallback(reconfigure_server_callback);
 
-  dvo_ros::util::tryGetTransform(from_baselink_to_asus, tl, "base_link", "asus");
+  std::string base_frame("base_link");
+  std::string to_frame("camera_color_optical_frame");
+  dvo_ros::util::tryGetTransform(from_baselink_to_camera, tl, base_frame, to_frame);
 
-  ROS_INFO_STREAM("transformation: base_link -> asus" << std::endl << from_baselink_to_asus.matrix());
+  ROS_INFO_STREAM("transformation: " << base_frame << " -> " << to_frame << " :" << std::endl << from_baselink_to_camera.matrix());
 
-  pose_sub_ = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("pelican/pose", 1, &CameraDenseTracker::handlePose, this);
+  // pose_sub_ = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("pelican/pose", 1, &CameraDenseTracker::handlePose, this);
 
-  latest_absolute_transform_.setIdentity();
-  accumulated_transform.setIdentity();
-
+  dvo_ros::util::tryGetTransform(latest_absolute_transform_, tl, "world", "base_link");
+  dvo_ros::util::tryGetTransform(accumulated_transform, tl, "world", "base_link");
+  
   //dvo::visualization::Visualizer::instance()
   //  .enabled(false)
   //  .useExternalWaitKey(false)
@@ -81,6 +83,7 @@ CameraDenseTracker::~CameraDenseTracker()
 
 bool CameraDenseTracker::hasChanged(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg)
 {
+  // ROS_INFO_STREAM(width << " != " << camera_info_msg->width << " || " << height << " != " << camera_info_msg->height);
   return width != camera_info_msg->width || height != camera_info_msg->height;
 }
 
@@ -111,6 +114,7 @@ void CameraDenseTracker::handleConfig(dvo_ros::CameraDenseTrackerConfig& config,
 
   if(level & CameraDenseTracker_RunDenseTracking)
   {
+    ROS_INFO_STREAM("config.run_dense_tracking: " << (config.run_dense_tracking? "True" : "False"));
     if(config.run_dense_tracking)
     {
       startSynchronizedImageStream();
@@ -197,6 +201,8 @@ void CameraDenseTracker::handleImages(
   // lock tracker so no one can reconfigure it
   boost::mutex::scoped_lock lock(tracker_mutex_);
 
+  // ROS_INFO("Handling Images");
+
   // different size of rgb and depth image
   if(depth_camera_info_msg->width != rgb_camera_info_msg->width || depth_camera_info_msg->height != rgb_camera_info_msg->height)
   {
@@ -250,13 +256,14 @@ void CameraDenseTracker::handleImages(
 
   if(!reference)
   {
-    accumulated_transform = latest_absolute_transform_ * from_baselink_to_asus;
+    accumulated_transform = latest_absolute_transform_ * from_baselink_to_camera;
     first = accumulated_transform;
 
-    vis_->camera("first")->
-        color(dvo::visualization::Color::blue()).
-        update(current->level(0), accumulated_transform).
-        show();
+    // This adds the first view to the point cloud?
+    // vis_->camera("first")->
+    //     color(dvo::visualization::Color::blue()).
+    //     update(current->level(0), accumulated_transform).
+    //     show();
 
     return;
   }
@@ -297,12 +304,12 @@ void CameraDenseTracker::handleImages(
     ROS_WARN("fail");
   }
 
-  publishTransform(h, accumulated_transform * from_baselink_to_asus.inverse(), "base_link_estimate");
+  publishTransform(h, accumulated_transform * from_baselink_to_camera.inverse(), "base_link_estimate");
 //  publishTransform(rgb_image_msg->header, first_transform.inverse() * accumulated_transform, "asus_estimate");
 
   if(use_dense_tracking_estimate_)
   {
-    publishPose(h, accumulated_transform * from_baselink_to_asus.inverse(), "baselink_estimate");
+    publishPose(h, accumulated_transform * from_baselink_to_camera.inverse(), "base_link_estimate");
   }
 
   sw_callback.stopAndPrint();

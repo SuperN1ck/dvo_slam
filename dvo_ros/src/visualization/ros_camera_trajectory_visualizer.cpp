@@ -411,7 +411,7 @@ struct RosCameraTrajectoryVisualizerImpl
     marker_server_(nh.getNamespace())
   {
     image_topic_ = it_.advertise("image", 1, true);
-    point_cloud_topic_ = nh_.advertise<AsyncPointCloudBuilder::PointCloud>("cloud", 1, true);
+    point_cloud_topic_ = nh_.advertise<AsyncPointCloudBuilder::PointCloud>("cloud_in", 1, true);
     update_timer_ = nh_.createTimer(ros::Duration(1.0), &RosCameraTrajectoryVisualizerImpl::update, this, false, true);
   }
 
@@ -471,6 +471,7 @@ private:
 
   void update(const ros::TimerEvent& e)
   {
+    // ROS_INFO_STREAM("point_cloud_topic_.getNumSubscribers():" << point_cloud_topic_.getNumSubscribers());
     if(point_cloud_topic_.getNumSubscribers() == 0) return;
 
     dvo::visualization::AsyncPointCloudBuilder::PointCloud::Ptr cloud = point_cloud_aggregator_.build();
