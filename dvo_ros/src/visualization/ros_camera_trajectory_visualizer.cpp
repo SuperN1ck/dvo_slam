@@ -476,6 +476,7 @@ private:
 
     dvo::visualization::AsyncPointCloudBuilder::PointCloud::Ptr cloud = point_cloud_aggregator_.build();
     cloud->header.frame_id = "world";
+    pcl_conversions::toPCL(ros::Time::now(), cloud->header.stamp);
     cloud->is_dense = true;
     point_cloud_topic_.publish(cloud);
   }
