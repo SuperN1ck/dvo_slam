@@ -58,6 +58,7 @@ CameraDenseTracker::CameraDenseTracker(ros::NodeHandle& nh, ros::NodeHandle& nh_
   ReconfigureServer::CallbackType reconfigure_server_callback = boost::bind(&CameraDenseTracker::handleConfig, this, _1, _2);
   reconfigure_server_.setCallback(reconfigure_server_callback);
 
+  ros::Duration(1.0).sleep(); // Wait until the static transorm is published
   std::string base_frame("base_link");
   std::string to_frame("camera_color_optical_frame");
   dvo_ros::util::tryGetTransform(from_baselink_to_camera, tl, base_frame, to_frame);
