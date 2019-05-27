@@ -36,6 +36,22 @@ Checkout the branch for your ROS version into a folder in your `ROS_PACKAGE_PATH
     rosmake dvo_core dvo_ros dvo_slam dvo_benchmark
     ```
 
+*  Install g2o:
+
+    20170730_git tag -> https://github.com/RainerKuemmerle/g2o/tree/20170730_git
+    
+    ```bash
+    git clone https://github.com/RainerKuemmerle/g2o.git
+    cd g2o
+    git fetch --all --tags --prune
+    git checkout origin 20170730_git
+    mkdir build
+    cd build
+    cmake ../
+    make
+    sudo make install
+    ```
+
 ## Usage
 
 Estimating the camera trajectory from an RGB-D image stream:
