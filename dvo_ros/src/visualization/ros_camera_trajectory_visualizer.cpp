@@ -411,7 +411,7 @@ struct RosCameraTrajectoryVisualizerImpl
     marker_server_(nh.getNamespace())
   {
     image_topic_ = it_.advertise("image", 1, true);
-    point_cloud_topic_ = nh_.advertise<AsyncPointCloudBuilder::PointCloud>("cloud_in", 1, true);
+    point_cloud_topic_ = nh_.advertise<AsyncPointCloudBuilder::PointCloud>("dvo_cloud_in", 1, true);
     update_timer_ = nh_.createTimer(ros::Duration(1.0), &RosCameraTrajectoryVisualizerImpl::update, this, false, true);
   }
 
