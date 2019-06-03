@@ -63,7 +63,7 @@ CameraDenseTracker::CameraDenseTracker(ros::NodeHandle& nh, ros::NodeHandle& nh_
   std::string to_frame("camera_color_optical_frame");
   dvo_ros::util::tryGetTransform(from_baselink_to_camera, tl, base_frame, to_frame);
 
-  ROS_INFO_STREAM("transformation: " << base_frame << " -> " << to_frame << " :" << std::endl << from_baselink_to_camera.matrix());
+  ROS_DEBUG_STREAM("transformation: " << base_frame << " -> " << to_frame << " :" << std::endl << from_baselink_to_camera.matrix());
 
   // pose_sub_ = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("pelican/pose", 1, &CameraDenseTracker::handlePose, this);
 
