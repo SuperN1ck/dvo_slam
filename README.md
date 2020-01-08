@@ -44,7 +44,7 @@ Checkout the branch for your ROS version into a folder in your `ROS_PACKAGE_PATH
     git clone https://github.com/RainerKuemmerle/g2o.git
     cd g2o
     git fetch --all --tags --prune
-    git checkout origin 20170730_git
+    git checkout tags/20170730_git
     mkdir build
     cd build
     cmake ../
